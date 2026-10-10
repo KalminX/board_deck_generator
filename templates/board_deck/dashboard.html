@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Executive Dashboard | Board Deck Generator{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Executive Presentation Runs</h1>
+            <p class="text-sm text-slate-500 mt-1">Generate branded, editable PowerPoint decks and management reports from structured financial data.</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="{% url 'board_deck:download_sample_workbook' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-lg border border-slate-300 transition-colors flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Canonical Excel Template
+            </a>
+            <a href="{% url 'board_deck:upload' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg shadow transition-colors flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                New Deck from Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- Metric Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Presentations</div>
+            <div class="text-3xl font-extrabold text-slate-900 mt-2">{{ total_decks }}</div>
+            <div class="text-xs text-slate-500 mt-1">Generated decks in repository</div>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="text-xs font-semibold uppercase tracking-wider text-emerald-600">Approved & Released</div>
+            <div class="text-3xl font-extrabold text-emerald-600 mt-2">{{ approved_decks }}</div>
+            <div class="text-xs text-slate-500 mt-1">Board packs signed off</div>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="text-xs font-semibold uppercase tracking-wider text-amber-600">Awaiting Review</div>
+            <div class="text-3xl font-extrabold text-amber-600 mt-2">{{ in_review }}</div>
+            <div class="text-xs text-slate-500 mt-1">Pending narrative sign-off</div>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="text-xs font-semibold uppercase tracking-wider text-blue-600">PDF Converter Status</div>
+            <div class="text-sm font-bold mt-2 flex items-center">
+                {% if pdf_available %}
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full"></span> LibreOffice Active
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                        <span class="w-2 h-2 mr-1.5 bg-slate-400 rounded-full"></span> PPTX Export Ready
+                    </span>
+                {% endif %}
+            </div>
+            <div class="text-xs text-slate-500 mt-2">Native PPTX download always available</div>
+        </div>
+    </div>
+
+    <!-- Presentation Runs Table -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <h2 class="text-base font-bold text-slate-800">Recent Board Presentations</h2>
+            <span class="text-xs text-slate-500 font-medium">Sorted by latest activity</span>
+        </div>
+
+        {% if decks %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 text-sm">
+                    <thead class="bg-slate-100 text-slate-600 font-semibold text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="px-6 py-3 text-left">Presentation & Company</th>
+                            <th class="px-6 py-3 text-left">Period</th>
+                            <th class="px-6 py-3 text-left">Status</th>
+                            <th class="px-6 py-3 text-left">Version</th>
+                            <th class="px-6 py-3 text-left">Style & Provider</th>
+                            <th class="px-6 py-3 text-left">Created</th>
+                            <th class="px-6 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 bg-white">
+                        {% for deck in decks %}
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="px-6 py-4 font-semibold text-slate-900">
+                                    <a href="{% url 'board_deck:presentation_review' deck.id %}" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                        {{ deck.title }}
+                                    </a>
+                                    <div class="text-xs text-slate-500 font-normal">{{ deck.organisation.name }}</div>
+                                </td>
+                                <td class="px-6 py-4 text-slate-700 font-medium">{{ deck.reporting_period.label }}</td>
+                                <td class="px-6 py-4">
+                                    {% if deck.status == 'approved' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                                            Approved
+                                        </span>
+                                    {% elif deck.status == 'review' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                                            In Review
+                                        </span>
+                                    {% elif deck.status == 'draft' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800">
+                                            Draft
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                            {{ deck.status|title }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 text-slate-600">v{{ deck.version }}</td>
+                                <td class="px-6 py-4 text-slate-600">
+                                    <span class="capitalize">{{ deck.narrative_style }}</span>
+                                    <span class="text-xs text-slate-400 block">{{ deck.commentary_provider }}</span>
+                                </td>
+                                <td class="px-6 py-4 text-slate-500 text-xs">{{ deck.created_at|date:"M d, Y H:i" }}</td>
+                                <td class="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                                    <a href="{% url 'board_deck:presentation_review' deck.id %}" class="inline-flex items-center px-2.5 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md border border-slate-300 transition-colors">
+                                        Review
+                                    </a>
+                                    {% if deck.pptx_file %}
+                                        <a href="{% url 'board_deck:download_pptx' deck.id %}" title="Download PowerPoint Deck" class="inline-flex items-center px-2.5 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm">
+                                            PPTX
+                                        </a>
+                                        <a href="{% url 'board_deck:download_pdf' deck.id %}" title="Download PDF Deck" class="inline-flex items-center px-2.5 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-900 text-white rounded-md transition-colors shadow-sm">
+                                            PDF
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-12 text-center">
+                <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <h3 class="mt-2 text-sm font-semibold text-slate-900">No presentations generated yet</h3>
+                <p class="mt-1 text-sm text-slate-500">Get started by uploading an Excel financial workbook or seeding demo data.</p>
+                <div class="mt-6 flex justify-center space-x-4">
+                    <a href="{% url 'board_deck:upload' %}" class="px-4 py-2 bg-blue-600 text-white font-semibold text-sm rounded-lg shadow hover:bg-blue-700">
+                        Upload Excel Workbook
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Normalized Snapshots Ready for Generation -->
+    {% if snapshots %}
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-slate-800 mb-4">Saved Financial Snapshots</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for snap in snapshots %}
+                    <div class="border border-slate-200 rounded-lg p-4 bg-slate-50 flex flex-col justify-between">
+                        <div>
+                            <div class="font-bold text-slate-900">{{ snap.organisation.name }}</div>
+                            <div class="text-xs font-semibold text-blue-600 mt-0.5">Period: {{ snap.reporting_period.label }}</div>
+                            <div class="text-xs text-slate-500 mt-2">Saved on {{ snap.created_at|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-200 flex justify-end">
+                            <a href="{% url 'board_deck:create_presentation_from_snapshot' snap.id %}" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs rounded-md shadow-sm">
+                                Generate Board Deck &rarr;
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

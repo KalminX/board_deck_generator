@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Review & Approve Presentation | Board Deck Generator{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Top Action & Status Bar -->
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <div class="flex items-center space-x-3">
+                <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">{{ deck.title }}</h1>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300">
+                    v{{ deck.version }}
+                </span>
+                {% if deck.status == 'approved' %}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center">
+                        <svg class="w-3.5 h-3.5 mr-1 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                        APPROVED FOR RELEASE
+                    </span>
+                {% else %}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                        IN REVIEW
+                    </span>
+                {% endif %}
+            </div>
+            <p class="text-xs text-slate-500 mt-1">
+                {{ deck.organisation.name }} &bull; Period: <strong>{{ deck.reporting_period.label }}</strong> &bull; 
+                Generated on {{ deck.created_at|date:"M d, Y H:i" }} &bull; Brand: <strong>{{ deck.generation_manifest.brand_theme }}</strong>
+            </p>
+        </div>
+
+        <!-- Export & Approval Actions -->
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{% url 'board_deck:download_pptx' deck.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow-sm transition-colors flex items-center">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Download PPTX
+            </a>
+
+            <a href="{% url 'board_deck:download_pdf' deck.id %}" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg border border-slate-300 transition-colors flex items-center">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                Download PDF
+            </a>
+
+            <a href="{% url 'board_deck:download_data_summary' deck.id %}" class="px-3 py-2 text-slate-600 hover:text-slate-900 font-medium text-xs rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                Data JSON
+            </a>
+
+            <a href="{% url 'board_deck:download_manifest' deck.id %}" class="px-3 py-2 text-slate-600 hover:text-slate-900 font-medium text-xs rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                Manifest
+            </a>
+
+            {% if deck.status != 'approved' %}
+                <form method="post" action="{% url 'board_deck:approve_deck' deck.id %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm transition-colors flex items-center">
+                        <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                        Approve Board Pack
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Warnings / Notes -->
+    {% if deck.validation_warnings %}
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-900">
+            <div class="font-bold flex items-center mb-1">
+                <svg class="w-4 h-4 mr-1 text-amber-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                Generation Notice & Warnings:
+            </div>
+            <ul class="list-disc list-inside space-y-0.5">
+                {% for w in deck.validation_warnings %}
+                    <li>{{ w }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <!-- Slide Narrative Review & Editing Section -->
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-slate-900">Slide-by-Slide Narrative Review & Verification</h2>
+            <span class="text-xs text-slate-500">Edit commentary below. Saving automatically re-builds PowerPoint presentation with your edits.</span>
+        </div>
+
+        {% for review in reviews %}
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="px-2 py-0.5 rounded text-xs font-bold bg-slate-200 text-slate-700">
+                            Slide: {{ review.slide_key }}
+                        </span>
+                        <h3 class="font-bold text-sm text-slate-900">{{ review.title }}</h3>
+                        {% if review.is_customized %}
+                            <span class="px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-700">
+                                Customized by Reviewer
+                            </span>
+                        {% else %}
+                            <span class="px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
+                                Template Generated
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <form method="post" action="{% url 'board_deck:save_narrative_edit' deck.id %}" class="p-6 space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="slide_key" value="{{ review.slide_key }}">
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Lead Executive Narrative</label>
+                        <textarea name="lead_summary" rows="2" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium text-slate-800">{{ review.custom_lead_summary }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Analytical Bullet Points (One per line)</label>
+                        <textarea name="bullets_text" rows="4" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-800 font-normal">{% for b in review.custom_bullets %}{{ b }}
+{% endfor %}</textarea>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2">
+                        <div class="text-xs text-slate-400">
+                            All metrics in this narrative are traceable to authoritative ledger snapshot ID <code>{{ deck.normalized_snapshot.snapshot_hash|slice:":12" }}</code>
+                        </div>
+                        <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs rounded-lg shadow-sm transition-colors">
+                            Save Changes & Rebuild PPTX
+                        </button>
+                    </div>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Financial Workbook | Board Deck Generator{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Upload Financial Workbook</h1>
+        <p class="text-sm text-slate-500 mt-1">Upload an Excel (.xlsx) financial workbook. Our normalization engine will map the worksheets to our canonical reporting schema.</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Organisation / Company Name</label>
+                {{ form.organisation_name }}
+                <p class="text-xs text-slate-400 mt-1">Leave blank to auto-detect from workbook metadata.</p>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Reporting Period</label>
+                {{ form.period_label }}
+                <p class="text-xs text-slate-400 mt-1">e.g., Q3 2026, September 2026, FY 2026.</p>
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Excel Workbook (.xlsx)</label>
+            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl hover:border-blue-500 transition-colors bg-slate-50">
+                <div class="space-y-2 text-center">
+                    <svg class="mx-auto h-12 w-12 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <div class="flex text-sm text-slate-600 justify-center">
+                        <label class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 px-2 py-1 shadow-sm border border-slate-200">
+                            <span>Select Excel File</span>
+                            {{ form.file }}
+                        </label>
+                    </div>
+                    <p class="text-xs text-slate-500">Supported format: Microsoft Excel .xlsx (Max 15MB)</p>
+                </div>
+            </div>
+            {% if form.file.errors %}
+                <p class="text-xs text-red-600 mt-2 font-medium">{{ form.file.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Schema Guidelines Box -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-xs text-blue-900 space-y-2">
+            <div class="font-bold flex items-center">
+                <svg class="w-4 h-4 mr-1 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                Supported Worksheet Conventions:
+            </div>
+            <ul class="list-disc list-inside space-y-1 text-blue-800">
+                <li><strong>Income Statement:</strong> Sheet name <code>P&L</code>, <code>Income Statement</code>, or <code>Profit & Loss</code> with columns <code>Line Item</code>, <code>Actual</code>, <code>Budget</code>, <code>Prior Period</code>, <code>YTD</code>.</li>
+                <li><strong>Balance Sheet:</strong> Sheet name <code>Balance Sheet</code> or <code>Statement of Financial Position</code>.</li>
+                <li><strong>Cash Flow:</strong> Sheet name <code>Cash Flow</code> with Operating, Investing, and Financing rows.</li>
+                <li><strong>KPIs & Scorecards:</strong> Sheet name <code>KPIs</code> with Target, Actual, Prior, and definitions.</li>
+                <li><strong>Risks & Actions:</strong> Sheet name <code>Risks & Actions</code> for governance tracking.</li>
+            </ul>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+            <a href="{% url 'board_deck:dashboard' %}" class="text-sm text-slate-500 hover:text-slate-800 font-medium">&larr; Back to Dashboard</a>
+            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-lg shadow transition-colors flex items-center">
+                Upload & Inspect Workbook &rarr;
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

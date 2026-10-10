@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Configure Board Deck Presentation | Board Deck Generator{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Configure Board Presentation</h1>
+        <p class="text-sm text-slate-500 mt-1">
+            Organisation: <strong class="text-slate-800">{{ snapshot.organisation.name }}</strong> | 
+            Period: <strong class="text-blue-600">{{ snapshot.reporting_period.label }}</strong>
+        </p>
+    </div>
+
+    <form method="post" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+        {% csrf_token %}
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Presentation Title</label>
+                {{ form.title }}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Brand & Visual Theme</label>
+                    {{ form.brand_theme }}
+                    <p class="text-xs text-slate-400 mt-1">Applies cohesive fonts, palettes, and chart styling.</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Narrative Tone & Density</label>
+                    {{ form.narrative_style }}
+                    <p class="text-xs text-slate-400 mt-1">Concise bullets for board packs or detailed commentary.</p>
+                </div>
+            </div>
+
+            <!-- Slide Selection Section -->
+            <div class="pt-4 border-t border-slate-200">
+                <div class="flex items-center justify-between mb-3">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Slide Selection & Presentation Structure</label>
+                    <button type="button" onclick="toggleAllSlides()" class="text-xs text-blue-600 hover:text-blue-800 font-semibold">Select / Deselect All</button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    {% for choice in form.selected_slides %}
+                        <label class="flex items-center space-x-3 p-2 bg-white rounded-lg border border-slate-200 hover:border-blue-400 transition-colors cursor-pointer text-xs font-medium text-slate-800">
+                            {{ choice.tag }}
+                            <span>{{ choice.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+            <a href="{% url 'board_deck:dashboard' %}" class="text-sm text-slate-500 hover:text-slate-800 font-medium">&larr; Cancel</a>
+            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-lg shadow transition-colors flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Generate PowerPoint Deck &rarr;
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function toggleAllSlides() {
+        const checkboxes = document.querySelectorAll('input[name="selected_slides"]');
+        const anyUnchecked = Array.from(checkboxes).some(cb => !cb.checked);
+        checkboxes.forEach(cb => cb.checked = anyUnchecked);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Django
+*.sqlite3
+*.sqlite3-journal
+media/uploads/*
+!media/uploads/.gitkeep
+media/exports/*
+!media/exports/.gitkeep
+staticfiles/
+.env
+
+# Testing & IDE
+.pytest_cache/
+.coverage
+htmlcov/
+.DS_Store
+.vscode/
+.idea/

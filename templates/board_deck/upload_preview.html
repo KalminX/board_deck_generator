@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Workbook Validation & Preview | Board Deck Generator{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Workbook Validation & Schema Preview</h1>
+            <p class="text-sm text-slate-500 mt-1">Review detected sheets, extracted financial figures, and validation results.</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="{% url 'board_deck:upload' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-lg border border-slate-300 transition-colors">
+                Re-Upload File
+            </a>
+            {% if validation.is_valid %}
+                <a href="{% url 'board_deck:create_presentation_from_snapshot' snapshot.id %}" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-lg shadow transition-colors">
+                    Proceed to Deck Generator &rarr;
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Validation Issues Card -->
+    {% if validation.has_errors or validation.warnings %}
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <h2 class="text-base font-bold text-slate-900">Data Validation Findings</h2>
+            
+            {% if validation.errors %}
+                <div class="space-y-2">
+                    <div class="text-xs font-bold uppercase tracking-wider text-red-600">Blocking Errors (Must fix to proceed):</div>
+                    {% for err in validation.errors %}
+                        <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-800 flex items-start space-x-2">
+                            <span class="font-bold">[{{ err.sheet }}]:</span>
+                            <span>{{ err.message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if validation.warnings %}
+                <div class="space-y-2">
+                    <div class="text-xs font-bold uppercase tracking-wider text-amber-600">Warnings (Proceed with caution):</div>
+                    {% for warn in validation.warnings %}
+                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 flex items-start space-x-2">
+                            <span class="font-bold">[{{ warn.sheet }}]:</span>
+                            <span>{{ warn.message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Sheet Inspection Summary -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <h2 class="text-base font-bold text-slate-900">Detected Worksheets</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for sheet_name, info in sheet_info.items %}
+                <div class="p-4 rounded-lg border border-slate-200 bg-slate-50">
+                    <div class="font-bold text-sm text-slate-800">{{ sheet_name }}</div>
+                    <div class="text-xs text-slate-500 mt-1">Headers: {{ info.detected_headers|slice:":4"|join:", " }}</div>
+                    <div class="text-xs text-slate-400 mt-1">Max Rows: {{ info.max_rows }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
