@@ -199,3 +199,16 @@ To enable automatic `.pdf` conversion:
 - Optional custom path in `.env`: `LIBREOFFICE_PATH=/path/to/soffice`
 
 If LibreOffice is not installed, the application continues to operate with full functionality for PPTX generation and displays an informative notification.
+
+
+## 🖼️ Application Screenshots
+
+| Executive Deck Configuration | AI Outline & Narrative Structure |
+|:---:|:---:|
+| ![Deck Config](screenshots/01_deck_config.png) | ![Slide Outline](screenshots/02_slide_outline.png) |
+| *Audience targeting, theme selection, & tone customization* | *Automated slide flow generation & executive messaging* |
+
+| Live Slide Visual Editor | PowerPoint / PDF Export & Delivery |
+|:---:|:---:|
+| ![Slide Editor](screenshots/03_slide_editor.png) | ![Export Preview](screenshots/04_export_preview.png) |
+| *Real-time card formatting, metric callouts, & layout tweaks* | *Pixel-perfect PPTX and PDF rendering with corporate branding* |
